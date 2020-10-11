@@ -844,10 +844,19 @@ value_contents_bits_eq (const struct value *val1, int offset1,
   gdb_assert (!val1->lazy && !val2->lazy);
 
   /* We shouldn't be trying to compare past the end of the values.  */
+#if 0 // BUG: workaround for https://sourceware.org/bugzilla/show_bug.cgi?id=25102
   gdb_assert (offset1 + length
 	      <= TYPE_LENGTH (val1->enclosing_type) * TARGET_CHAR_BIT);
   gdb_assert (offset2 + length
 	      <= TYPE_LENGTH (val2->enclosing_type) * TARGET_CHAR_BIT);
+#else
+  if (offset1 + length > TYPE_LENGTH (val1->enclosing_type) * TARGET_CHAR_BIT) {
+    return false;
+  }
+  if (offset2 + length > TYPE_LENGTH (val2->enclosing_type) * TARGET_CHAR_BIT) {
+    return false;
+  }
+#endif
 
   memset (&rp1, 0, sizeof (rp1));
   memset (&rp2, 0, sizeof (rp2));
